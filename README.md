@@ -5,12 +5,12 @@ Clojure namespaces `quest.cyberdungeon.glfw.*` over [LWJGL](https://www.lwjgl.or
 ## Dependency (JitPack)
 
 ```clojure
-:repositories [["jitpack" "https://jitpack.io" {:snapshots true}]]
+:repositories [["jitpack" "https://jitpack.io"]]
 
-[com.github.damn/glfw "main-SNAPSHOT"]
+[com.github.damn/glfw "v0.1.2"]
 ```
 
-`main-SNAPSHOT` tracks the latest commit on `main` (see [jitpack.io/#damn/glfw](https://jitpack.io/#damn/glfw)). Pin a [release tag](https://github.com/damn/glfw/tags) or commit hash when you need a fixed revision.
+JitPack builds from this GitHub repo. The version string is a **git ref**: a [release tag](https://github.com/damn/glfw/tags) (e.g. `v0.1.2`), a commit hash, or a branch name. Tags are created with `git tag v0.1.2 && git push origin v0.1.2` after you want a new release; JitPack then serves `com.github.damn/glfw` at that ref (see [jitpack.io/#damn/glfw](https://jitpack.io/#damn/glfw)).
 
 **Natives** are not bundled — add platform classifiers in your application:
 
@@ -55,7 +55,7 @@ Prefer linking Clojure vars this way instead of external C/LWJGL URLs.
 | Approach | Role |
 |----------|------|
 | **README** (this file) | Install, JitPack coordinates, links — not a full API reference |
-| **Codox → GitHub Pages** | Generated HTML from docstrings; linked below |
+| **Codox → GitHub Pages** | Generated HTML from docstrings, per-var **Source** links to GitHub (`:source-uri` in `project.clj`); linked below |
 | **GitHub source browser** | Shows docstrings on each `.clj` file when browsing the repo |
 
 **Published docs:** [https://damn.github.io/glfw/](https://damn.github.io/glfw/) (Codox output from CI on `main` → `gh-pages` branch).

@@ -12,6 +12,7 @@
           :description "Clojure wrapper for LWJGL GLFW."
           :output-path "target/doc"
           :source-paths ["src"]
+          :source-uri "https://github.com/damn/glfw/blob/{git-commit}/{filepath}#L{line}"
           :metadata {:doc/format :markdown}}
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ~(into ["-Dorg.lwjgl.system.allocator=system"]
