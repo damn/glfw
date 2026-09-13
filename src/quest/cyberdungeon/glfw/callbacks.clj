@@ -10,6 +10,6 @@
   [[quest.cyberdungeon.glfw.glfw/set-cursor-pos-callback!]], and
   [[quest.cyberdungeon.glfw.glfw/set-mouse-button-callback!]].
 
-  Call in a `finally` block before [[quest.cyberdungeon.glfw.glfw/destroy-window!]]."
+  Call in a `finally` block before the window from [[quest.cyberdungeon.glfw.glfw/with-window]] exits."
   [window]
   (Callbacks/glfwFreeCallbacks window))

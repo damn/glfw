@@ -1,9 +1,8 @@
 (ns quest.cyberdungeon.glfw.glfw
   "Clojure facade for GLFW 3.3 windowing and input.
 
-  Typical lifecycle: [[with-state]] (init + terminate) → [[window-hints!]] (optional) →
-  [[create-window!]] → [[make-context-current!]] → loop of [[poll-events!]] and [[swap-buffers!]] →
-  [[destroy-window!]].
+  Typical lifecycle: [[with-state]] → [[window-hints!]] (optional) → [[with-window]] →
+  [[make-context-current!]] → loop of [[poll-events!]] and [[swap-buffers!]].
 
   Register input with the `set-*-callback!` functions; release native callback slots with
   [[quest.cyberdungeon.glfw.callbacks/free!]] when done.
@@ -189,7 +188,7 @@
     value))
 
 (defn window-hints!
-  "Set window/context hints before [[create-window!]]. `hints` uses **keywords** for hint names
+  "Set window/context hints before [[with-window]]. `hints` uses **keywords** for hint names
   and Clojure values where possible; not persisted across windows.
 
   Example (OpenGL 3.2 core, forward-compatible on macOS):
@@ -203,11 +202,7 @@
     (window-hint! (resolve-window-hint-name hint)
                   (resolve-window-hint-value value))))
 
-(defn create-window!
-  "Create a window and OpenGL context. Returns window handle, or `0` on failure.
-
-  Set hints with [[window-hints!]] first. `monitor` `0` = windowed; `share` `0` = no shared
-  context. Then [[make-context-current!]], [[swap-interval!]], and register callbacks."
+(defn- create-window!
   [width height title monitor share]
   (GLFW/glfwCreateWindow (int width)
                          (int height)
@@ -215,11 +210,34 @@
                          (long monitor)
                          (long share)))
 
-(defn destroy-window!
-  "Destroy `window` and its context. Call [[quest.cyberdungeon.glfw.callbacks/free!]] first if
-  callbacks were registered."
+(defn- destroy-window!
   [window]
   (GLFW/glfwDestroyWindow window))
+
+(defn- with-window*
+  [{:keys [width height title monitor share]} f]
+  (let [window (create-window! width height title monitor share)]
+    (when (zero? window)
+      (throw (ex-info "Couldn't create window" {:width width :height height :title title})))
+    (try
+      (f window)
+      (finally
+        (destroy-window! window)))))
+
+(defmacro with-window
+  "Create a window and bind it for `body`, like `clojure.core/with-open` / `clojure.java.jdbc/with-db-connection`.
+
+  `binding` is `[sym cfg]`: `sym` is the handle in `body`; `cfg` requires `:width`, `:height`,
+  `:title`, `:monitor`, and `:share` (`0` = windowed / no shared context).
+
+      (with-window [w {:width 640 :height 480 :title \"App\" :monitor 0 :share 0}]
+        (make-context-current! w)
+        ...)
+
+  Call [[window-hints!]] first. Free callbacks with [[quest.cyberdungeon.glfw.callbacks/free!]]
+  before the window is destroyed if you registered any."
+  [[window cfg] & body]
+  `(with-window* ~cfg (fn [~window] ~@body)))
 
 (defn window-should-close?
   "Whether the user requested close (e.g. close box). Poll in your main loop."
@@ -242,17 +260,30 @@
   [window]
   (GLFW/glfwSwapBuffers window))
 
-(defn get-framebuffer-size
-  "Write framebuffer size in **pixels** into `w` and `h` (each a length-1 int array).
-  Use for Retina scaling vs [[get-window-size]]."
+(defn- get-framebuffer-size*
   [window w h]
   (GLFW/glfwGetFramebufferSize ^long window w h))
 
-(defn get-window-size
-  "Write window size in **screen coordinates** into `w` and `h` (each a length-1 int array).
-  Cursor from [[get-cursor-pos]] uses this space; compare to [[get-framebuffer-size]] on Retina."
+(defn get-framebuffer-size
+  "Framebuffer size in **pixels** as `[width height]`. Use for Retina scaling vs [[get-window-size]]."
+  [window]
+  (let [w (int-array 1)
+        h (int-array 1)]
+    (get-framebuffer-size* window w h)
+    [(aget w 0) (aget h 0)]))
+
+(defn- get-window-size*
   [window w h]
   (GLFW/glfwGetWindowSize ^long window w h))
+
+(defn get-window-size
+  "Window size in **screen coordinates** as `[width height]`. Cursor from [[get-cursor-pos]] uses
+  this space; compare to [[get-framebuffer-size]] on Retina."
+  [window]
+  (let [w (int-array 1)
+        h (int-array 1)]
+    (get-window-size* window w h)
+    [(aget w 0) (aget h 0)]))
 
 ;; --- callbacks ---
 
@@ -287,10 +318,17 @@
   [window key]
   (GLFW/glfwGetKey window (int key)))
 
-(defn get-cursor-pos
-  "Write cursor position into `x` and `y` (double arrays length 1), in window coordinates."
+(defn- get-cursor-pos*
   [window x y]
   (GLFW/glfwGetCursorPos window x y))
+
+(defn get-cursor-pos
+  "Cursor position in window coordinates as `[x y]` (doubles)."
+  [window]
+  (let [x (double-array 1)
+        y (double-array 1)]
+    (get-cursor-pos* window x y)
+    [(aget x 0) (aget y 0)]))
 
 (defn get-mouse-button
   "Poll mouse button: returns [[press]] or [[release]] for `button` (e.g. [[mouse-button-left]])."

@@ -29,8 +29,9 @@ JitPack builds from this GitHub repo. The version string is a **git ref**: a [re
                        :context-version-minor 2
                        :opengl-profile :opengl-core-profile
                        :opengl-forward-compat true})
-  ;; create-window!, loop …
-  )
+  (glfw/with-window [w {:width 640 :height 480 :title "My app" :monitor 0 :share 0}]
+    ;; make-context-current!, loop …
+    ))
 ```
 
 ## Window smoke test
@@ -45,7 +46,7 @@ Uses `:dev` profile natives (`project.clj` defaults to macOS — change for your
 
 Codox (markdown) resolves wiki-style links in docstrings:
 
-- Same namespace: `[[create-window!]]`
+- Same namespace: `[[with-window]]`
 - Other namespace: `[[quest.cyberdungeon.glfw.image/malloc]]`
 
 Prefer linking Clojure vars this way instead of external C/LWJGL URLs.

@@ -9,16 +9,12 @@
                          :context-version-minor 2
                          :opengl-profile :opengl-core-profile
                          :opengl-forward-compat true})
-    (let [window (glfw/create-window! 640 480 "quest.cyberdungeon.glfw window test" 0 0)]
-      (when (zero? window)
-        (throw (ex-info "Couldn't create window" {})))
-      (try
-        (glfw/make-context-current! window)
-        (glfw/swap-interval! 1)
-        (loop []
-          (when-not (glfw/window-should-close? window)
-            (glfw/poll-events!)
-            (glfw/swap-buffers! window)
-            (recur)))
-        (finally
-          (glfw/destroy-window! window))))))
+    (glfw/with-window [window {:width 640 :height 480 :title "quest.cyberdungeon.glfw window test"
+                               :monitor 0 :share 0}]
+      (glfw/make-context-current! window)
+      (glfw/swap-interval! 1)
+      (loop []
+        (when-not (glfw/window-should-close? window)
+          (glfw/poll-events!)
+          (glfw/swap-buffers! window)
+          (recur))))))
