@@ -24,11 +24,10 @@ JitPack builds from this GitHub repo. The version string is a **git ref**: a [re
 ```clojure
 (require '[quest.cyberdungeon.glfw.glfw :as glfw])
 
-(when (glfw/init!)
-  (try
-    ;; …
-    (finally
-      (glfw/terminate!))))
+(glfw/with-state
+  (glfw/window-hint! glfw/context-version-major 3)
+  ;; window-hint!, create-window!, loop …
+  )
 ```
 
 ## Window smoke test

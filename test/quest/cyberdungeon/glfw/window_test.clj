@@ -4,9 +4,7 @@
 
 (defn -main
   [& _]
-  (when-not (glfw/init!)
-    (throw (ex-info "Unable to initialize GLFW" {})))
-  (try
+  (glfw/with-state
     (glfw/window-hint! glfw/context-version-major 3)
     (glfw/window-hint! glfw/context-version-minor 2)
     (glfw/window-hint! glfw/opengl-profile glfw/opengl-core-profile)
@@ -23,6 +21,4 @@
             (glfw/swap-buffers! window)
             (recur)))
         (finally
-          (glfw/destroy-window! window))))
-    (finally
-      (glfw/terminate!))))
+          (glfw/destroy-window! window))))))

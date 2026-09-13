@@ -1,9 +1,9 @@
 (ns quest.cyberdungeon.glfw.glfw
   "Clojure facade for GLFW 3.3 windowing and input.
 
-  Typical lifecycle: [[init!]] → [[window-hint!]] (optional, repeatable) → [[create-window!]]
-  → [[make-context-current!]] → loop of [[poll-events!]] and [[swap-buffers!]] →
-  [[destroy-window!]] → [[terminate!]].
+  Typical lifecycle: [[with-state]] (init + terminate) → [[window-hint!]] (optional, repeatable) →
+  [[create-window!]] → [[make-context-current!]] → loop of [[poll-events!]] and [[swap-buffers!]] →
+  [[destroy-window!]].
 
   Register input with the `set-*-callback!` functions; release native callback slots with
   [[quest.cyberdungeon.glfw.callbacks/free!]] when done.
@@ -141,15 +141,27 @@
 
 ;; --- library lifecycle ---
 
-(defn init!
-  "Initialize GLFW. Returns truthy on success. Call once before other functions; pair with [[terminate!]]."
+(defn- init!
   []
   (GLFW/glfwInit))
 
-(defn terminate!
-  "Shut down GLFW after all windows are destroyed. Pair with [[init!]]."
+(defn- terminate!
   []
   (GLFW/glfwTerminate))
+
+(defn- with-state*
+  [f]
+  (when-not (init!)
+    (throw (ex-info "Unable to initialize GLFW" {})))
+  (try
+    (f)
+    (finally
+      (terminate!))))
+
+(defmacro with-state
+  "Run `body` forms with GLFW initialized; terminates in `finally`."
+  [& body]
+  `(with-state* (fn [] ~@body)))
 
 (defn poll-events!
   "Process pending window and input events. Call each frame before drawing; may invoke callbacks
@@ -164,7 +176,7 @@
   (GLFW/glfwSwapInterval value))
 
 (defn get-time
-  "Monotonic time in seconds since [[init!]]. Useful for frame timing."
+  "Monotonic time in seconds since GLFW was initialized (e.g. inside [[with-state]]). Useful for frame timing."
   []
   (GLFW/glfwGetTime))
 
