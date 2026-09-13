@@ -5,12 +5,12 @@ Clojure namespaces `quest.cyberdungeon.glfw.*` over [LWJGL](https://www.lwjgl.or
 ## Dependency (JitPack)
 
 ```clojure
-:repositories [["jitpack" "https://jitpack.io"]]
+:repositories [["jitpack" "https://jitpack.io" {:snapshots true}]]
 
-[com.github.damn/glfw "v0.1.1"]
+[com.github.damn/glfw "main-SNAPSHOT"]
 ```
 
-Replace the version with a [release tag](https://github.com/damn/glfw/tags) or commit hash JitPack has built (see [jitpack.io/#damn/glfw](https://jitpack.io/#damn/glfw)).
+`main-SNAPSHOT` tracks the latest commit on `main` (see [jitpack.io/#damn/glfw](https://jitpack.io/#damn/glfw)). Pin a [release tag](https://github.com/damn/glfw/tags) or commit hash when you need a fixed revision.
 
 **Natives** are not bundled — add platform classifiers in your application:
 
