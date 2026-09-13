@@ -14,105 +14,106 @@
   is loaded (`require`, REPL, Codox, etc.). That initializes LWJGL and loads JNI for the
   current platform. Tools that only need docstrings (e.g. Codox on CI) must still put the
   matching native JARs on the classpath."
+  (:require [clojure.string :as str])
   (:import (org.lwjgl.glfw GLFW)))
 
-;; --- constants ---
+;; --- input keywords ---
 
-(def key-escape
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_ESCAPE)
+(def ^:private key->gl
+  (merge
+   {:escape GLFW/GLFW_KEY_ESCAPE
+    :space GLFW/GLFW_KEY_SPACE
+    :enter GLFW/GLFW_KEY_ENTER
+    :tab GLFW/GLFW_KEY_TAB
+    :backspace GLFW/GLFW_KEY_BACKSPACE
+    :delete GLFW/GLFW_KEY_DELETE
+    :minus GLFW/GLFW_KEY_MINUS
+    :equal GLFW/GLFW_KEY_EQUAL
+    :left GLFW/GLFW_KEY_LEFT
+    :right GLFW/GLFW_KEY_RIGHT
+    :up GLFW/GLFW_KEY_UP
+    :down GLFW/GLFW_KEY_DOWN}
+   (into {}
+         (for [c "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+           [(keyword (str/lower-case (str c))) (int c)]))
+   (into {}
+         (for [c "0123456789"]
+           [(keyword (str c)) (int c)]))))
 
-(def key-space
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_SPACE)
+(def ^:private mouse-button->gl
+  {:mouse-left GLFW/GLFW_MOUSE_BUTTON_LEFT
+   :mouse-right GLFW/GLFW_MOUSE_BUTTON_RIGHT
+   :mouse-middle GLFW/GLFW_MOUSE_BUTTON_MIDDLE})
 
-(def key-enter
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_ENTER)
+(def ^:private gamepad-button->gl
+  {:left-bumper GLFW/GLFW_GAMEPAD_BUTTON_LEFT_BUMPER
+   :right-bumper GLFW/GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER
+   :a GLFW/GLFW_GAMEPAD_BUTTON_A
+   :x GLFW/GLFW_GAMEPAD_BUTTON_X})
 
-(def key-tab
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_TAB)
+(def ^:private gamepad-axis->gl
+  {:left-x GLFW/GLFW_GAMEPAD_AXIS_LEFT_X
+   :left-y GLFW/GLFW_GAMEPAD_AXIS_LEFT_Y})
 
-(def key-backspace
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_BACKSPACE)
+(def ^:private gl->action
+  {GLFW/GLFW_PRESS :press
+   GLFW/GLFW_RELEASE :release})
 
-(def key-delete
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_DELETE)
+(def ^:private gl->key
+  (into {} (map (fn [[kw code]] [code kw]) key->gl)))
 
-(def key-minus
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_MINUS)
+(def ^:private gl->mouse-button
+  (into {} (map (fn [[kw code]] [code kw]) mouse-button->gl)))
 
-(def key-equal
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_EQUAL)
+(defn- key-code->keyword
+  [code]
+  (or (get gl->key (int code)) (int code)))
 
-(def key-left
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_LEFT)
+(defn- mouse-button-code->keyword
+  [code]
+  (or (get gl->mouse-button (int code))
+      (throw (ex-info "Unknown mouse button code" {:code code}))))
 
-(def key-right
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_RIGHT)
+(defn- key->glfw
+  [key]
+  (cond
+    (keyword? key) (or (key->gl key)
+                         (throw (ex-info "Unknown key" {:key key})))
+    (integer? key) (int key)
+    :else (throw (ex-info "Key must be keyword or int" {:key key}))))
 
-(def key-up
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_UP)
+(defn- mouse-button->glfw
+  [button]
+  (or (mouse-button->gl button)
+      (throw (ex-info "Unknown mouse button" {:button button}))))
 
-(def key-down
-  "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
-  GLFW/GLFW_KEY_DOWN)
+(defn gamepad-button->glfw
+  "Gamepad button keyword → GLFW index for [[quest.cyberdungeon.glfw.gamepad-state/button]]."
+  [button]
+  (or (gamepad-button->gl button)
+      (throw (ex-info "Unknown gamepad button" {:button button}))))
 
-(def press
-  "Key or mouse button is down. Return value of [[get-key]], [[get-mouse-button]], and callback `action`."
-  GLFW/GLFW_PRESS)
+(defn gamepad-axis->glfw
+  "Gamepad axis keyword → GLFW index for [[quest.cyberdungeon.glfw.gamepad-state/axis]]."
+  [axis]
+  (or (gamepad-axis->gl axis)
+      (throw (ex-info "Unknown gamepad axis" {:axis axis}))))
 
-(def release
-  "Key or mouse button was released. Callback `action` with [[set-key-callback!]] / [[set-mouse-button-callback!]]."
-  GLFW/GLFW_RELEASE)
+(defn action-keyword
+  "GLFW callback action → `:press`, `:release`, or nil (e.g. key repeat)."
+  [action]
+  (gl->action (int action)))
 
-(def mouse-button-left
-  "Mouse button token for [[get-mouse-button]] / [[set-mouse-button-callback!]]. With [[press]] / [[release]]."
-  GLFW/GLFW_MOUSE_BUTTON_LEFT)
+(defn action->keyword
+  "GLFW callback or poll action → `:press` or `:release`; throws if unknown."
+  [action]
+  (or (action-keyword action)
+      (throw (ex-info "Unknown input action" {:action action}))))
 
-(def mouse-button-right
-  "Mouse button token for [[get-mouse-button]] / [[set-mouse-button-callback!]]. With [[press]] / [[release]]."
-  GLFW/GLFW_MOUSE_BUTTON_RIGHT)
-
-(def mouse-button-middle
-  "Mouse button token for [[get-mouse-button]] / [[set-mouse-button-callback!]]. With [[press]] / [[release]]."
-  GLFW/GLFW_MOUSE_BUTTON_MIDDLE)
-
-(def joystick-last
-  "Highest GLFW joystick id (inclusive). Loop `0`..`joystick-last` with [[joystick-present?]]."
-  GLFW/GLFW_JOYSTICK_LAST)
-
-(def gamepad-button-left-bumper
-  "Gamepad button index for [[quest.cyberdungeon.glfw.gamepad-state/button]] after [[get-gamepad-state]]."
-  GLFW/GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)
-
-(def gamepad-button-right-bumper
-  "Gamepad button index for [[quest.cyberdungeon.glfw.gamepad-state/button]] after [[get-gamepad-state]]."
-  GLFW/GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)
-
-(def gamepad-button-a
-  "Gamepad button index for [[quest.cyberdungeon.glfw.gamepad-state/button]] after [[get-gamepad-state]]."
-  GLFW/GLFW_GAMEPAD_BUTTON_A)
-
-(def gamepad-button-x
-  "Gamepad button index for [[quest.cyberdungeon.glfw.gamepad-state/button]] after [[get-gamepad-state]]."
-  GLFW/GLFW_GAMEPAD_BUTTON_X)
-
-(def gamepad-axis-left-x
-  "Gamepad axis index for [[quest.cyberdungeon.glfw.gamepad-state/axis]] after [[get-gamepad-state]]."
-  GLFW/GLFW_GAMEPAD_AXIS_LEFT_X)
-
-(def gamepad-axis-left-y
-  "Gamepad axis index for [[quest.cyberdungeon.glfw.gamepad-state/axis]] after [[get-gamepad-state]]."
-  GLFW/GLFW_GAMEPAD_AXIS_LEFT_Y)
+(defn joystick-count
+  "Joystick ids to probe: `(range (joystick-count))`."
+  []
+  (inc GLFW/GLFW_JOYSTICK_LAST))
 
 ;; --- library lifecycle ---
 
@@ -124,7 +125,8 @@
   []
   (GLFW/glfwTerminate))
 
-(defn- with-state*
+(defn with-state*
+  "Internal helper for [[with-state]]; callable from expanded macro code in other namespaces."
   [f]
   (when-not (init!)
     (throw (ex-info "Unable to initialize GLFW" {})))
@@ -214,7 +216,8 @@
   [window]
   (GLFW/glfwDestroyWindow window))
 
-(defn- with-window*
+(defn with-window*
+  "Internal helper for [[with-window]]; callable from expanded macro code in other namespaces."
   [{:keys [width height title monitor share]} f]
   (let [window (create-window! width height title monitor share)]
     (when (zero? window)
@@ -245,7 +248,7 @@
   (GLFW/glfwWindowShouldClose window))
 
 (defn set-window-should-close!
-  "Set the close flag (e.g. from [[key-escape]] in [[set-key-callback!]])."
+  "Set the close flag (e.g. from `:escape` in [[set-key-callback!]])."
   [window value]
   (GLFW/glfwSetWindowShouldClose window value))
 
@@ -294,10 +297,13 @@
   (GLFW/glfwSetFramebufferSizeCallback window f))
 
 (defn set-key-callback!
-  "Register key callback `(fn [window key scancode action mods] ...)`. `action` is [[press]]
-  or [[release]]. See also polling with [[get-key]]."
+  "Register key callback `(fn [window key scancode action mods] ...)`. `key` is a keyword
+  (e.g. `:escape`, `:a`). Use [[action->keyword]] on `action`. See also [[get-key]]."
   [window f]
-  (GLFW/glfwSetKeyCallback window f))
+  (GLFW/glfwSetKeyCallback
+   window
+   (fn [window key scancode action mods]
+     (f window (key-code->keyword key) scancode action mods))))
 
 (defn set-cursor-pos-callback!
   "Register cursor move callback `(fn [window x y] ...)` in window coordinates."
@@ -305,18 +311,22 @@
   (GLFW/glfwSetCursorPosCallback window f))
 
 (defn set-mouse-button-callback!
-  "Register mouse button callback `(fn [window button action mods] ...)`. `button` uses
-  [[mouse-button-left]] etc.; `action` is [[press]] or [[release]]."
+  "Register mouse button callback `(fn [window button action mods] ...)`. `button` is a keyword
+  (`:mouse-left`, etc.). Use [[action->keyword]] on `action`."
   [window f]
-  (GLFW/glfwSetMouseButtonCallback window f))
+  (GLFW/glfwSetMouseButtonCallback
+   window
+   (fn [window button action mods]
+     (f window (mouse-button-code->keyword button) action mods))))
 
 ;; --- input ---
 
 (defn get-key
-  "Poll keyboard: returns [[press]] or [[release]] for `key` (e.g. [[key-escape]]). Alternative
+  "Poll keyboard: returns `:press` or `:release` for key keyword (e.g. `:escape`). Alternative
   to [[set-key-callback!]] for held-key checks."
   [window key]
-  (GLFW/glfwGetKey window (int key)))
+  (action->keyword
+   (GLFW/glfwGetKey window (int (key->glfw key)))))
 
 (defn- get-cursor-pos*
   [window x y]
@@ -331,9 +341,11 @@
     [(aget x 0) (aget y 0)]))
 
 (defn get-mouse-button
-  "Poll mouse button: returns [[press]] or [[release]] for `button` (e.g. [[mouse-button-left]])."
+  "Poll mouse button: returns `:press` or `:release` for `:mouse-left`, `:mouse-right`, or
+  `:mouse-middle`."
   [window button]
-  (GLFW/glfwGetMouseButton window button))
+  (action->keyword
+   (GLFW/glfwGetMouseButton window (int (mouse-button->glfw button)))))
 
 ;; --- cursor ---
 
@@ -370,8 +382,8 @@
 
 (defn get-gamepad-state
   "Fill `state` (from [[quest.cyberdungeon.glfw.gamepad-state/calloc]]) for gamepad `jid`.
-  Read buttons with [[quest.cyberdungeon.glfw.gamepad-state/button]] and axes with
-  [[quest.cyberdungeon.glfw.gamepad-state/axis]] using [[gamepad-button-a]] etc."
+  Read buttons/axes with keywords (e.g. `:a`, `:left-x`) via [[quest.cyberdungeon.glfw.gamepad-state/button]]
+  and [[quest.cyberdungeon.glfw.gamepad-state/axis]]."
   [jid state]
   (GLFW/glfwGetGamepadState jid state))
 

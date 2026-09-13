@@ -1,8 +1,9 @@
 (ns quest.cyberdungeon.glfw.gamepad-state
   "Scratch buffer for [[quest.cyberdungeon.glfw.glfw/get-gamepad-state]].
 
-  Pair with [[calloc]] / [[free!]] around reads; use [[button]] and [[axis]] with constants
-  from [[quest.cyberdungeon.glfw.glfw]] such as [[quest.cyberdungeon.glfw.glfw/gamepad-button-a]]."
+  Pair with [[calloc]] / [[free!]] around reads; use [[button]] and [[axis]] with keywords
+  (e.g. `:a`, `:left-bumper`, `:left-x`)."
+  (:require [quest.cyberdungeon.glfw.glfw :as glfw])
   (:import (org.lwjgl.glfw GLFWGamepadState)))
 
 (defn calloc
@@ -16,14 +17,12 @@
   (.free state))
 
 (defn button
-  "Button value at `index` (e.g. [[quest.cyberdungeon.glfw.glfw/gamepad-button-a]]) after a
-  successful [[quest.cyberdungeon.glfw.glfw/get-gamepad-state]]. Compare to
-  [[quest.cyberdungeon.glfw.glfw/press]]."
-  [^GLFWGamepadState state index]
-  (.buttons state (int index)))
+  "Button at keyword `button` (e.g. `:a`) after [[quest.cyberdungeon.glfw.glfw/get-gamepad-state]].
+  Compare to `:press` / `:release` via [[quest.cyberdungeon.glfw.glfw/action-keyword]]."
+  [^GLFWGamepadState state button]
+  (.buttons state (int (glfw/gamepad-button->glfw button))))
 
 (defn axis
-  "Axis value at `index` (e.g. [[quest.cyberdungeon.glfw.glfw/gamepad-axis-left-x]]) in
-  `-1..1` after [[quest.cyberdungeon.glfw.glfw/get-gamepad-state]]."
-  [^GLFWGamepadState state index]
-  (.axes state (int index)))
+  "Axis at keyword `axis` (e.g. `:left-x`) in `-1..1` after [[quest.cyberdungeon.glfw.glfw/get-gamepad-state]]."
+  [^GLFWGamepadState state axis]
+  (.axes state (int (glfw/gamepad-axis->glfw axis))))
