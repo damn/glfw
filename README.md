@@ -39,6 +39,15 @@ lein window-test
 
 Uses `:dev` profile natives (`project.clj` defaults to macOS — change for your OS).
 
+## Docstring cross-links
+
+Codox (markdown) resolves wiki-style links in docstrings:
+
+- Same namespace: `[[create-window!]]`
+- Other namespace: `[[quest.cyberdungeon.glfw.image/malloc]]`
+
+Prefer linking Clojure vars this way instead of external C/LWJGL URLs.
+
 ## API documentation
 
 **Docstrings live in the Clojure sources** (`src/quest/cyberdungeon/glfw/`). Do not duplicate them in this README.
