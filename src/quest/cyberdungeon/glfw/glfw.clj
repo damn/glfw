@@ -1,7 +1,7 @@
 (ns quest.cyberdungeon.glfw.glfw
   "Clojure facade for GLFW 3.3 windowing and input.
 
-  Typical lifecycle: [[with-state]] (init + terminate) → [[window-hint!]] (optional, repeatable) →
+  Typical lifecycle: [[with-state]] (init + terminate) → [[window-hints!]] (optional) →
   [[create-window!]] → [[make-context-current!]] → loop of [[poll-events!]] and [[swap-buffers!]] →
   [[destroy-window!]].
 
@@ -20,27 +20,27 @@
 ;; --- constants ---
 
 (def true*
-  "Boolean hint value (`1`). Use with [[window-hint!]], e.g. [[opengl-forward-compat]]."
+  "Boolean hint value (`1`). Use with [[window-hints!]], e.g. [[opengl-forward-compat]]."
   GLFW/GLFW_TRUE)
 
 (def context-version-major
-  "Window hint name: OpenGL major version. Set via [[window-hint!]] before [[create-window!]]."
+  "Window hint name: OpenGL major version. Set via [[window-hints!]] before [[create-window!]]."
   GLFW/GLFW_CONTEXT_VERSION_MAJOR)
 
 (def context-version-minor
-  "Window hint name: OpenGL minor version. Pair with [[context-version-major]] via [[window-hint!]]."
+  "Window hint name: OpenGL minor version. Pair with [[context-version-major]] via [[window-hints!]]."
   GLFW/GLFW_CONTEXT_VERSION_MINOR)
 
 (def opengl-profile
-  "Window hint name: OpenGL profile. Value is often [[opengl-core-profile]] via [[window-hint!]]."
+  "Window hint name: OpenGL profile. Value is often [[opengl-core-profile]] via [[window-hints!]]."
   GLFW/GLFW_OPENGL_PROFILE)
 
 (def opengl-core-profile
-  "Window hint value: OpenGL core profile. Use with [[opengl-profile]] and [[window-hint!]]."
+  "Window hint value: OpenGL core profile. Use with [[opengl-profile]] and [[window-hints!]]."
   GLFW/GLFW_OPENGL_CORE_PROFILE)
 
 (def opengl-forward-compat
-  "Window hint name: forward-compatible context. Pass [[true*]] to [[window-hint!]] (common on macOS)."
+  "Window hint name: forward-compatible context. Pass [[true*]] to [[window-hints!]] (common on macOS)."
   GLFW/GLFW_OPENGL_FORWARD_COMPAT)
 
 (def key-escape
@@ -182,20 +182,25 @@
 
 ;; --- window ---
 
-(defn window-hint!
-  "Set one window/context hint before [[create-window!]]. Hints are not persisted across
-  windows — set again for each creation.
+(defn- window-hint!
+  [hint value]
+  (GLFW/glfwWindowHint hint value))
+
+(defn window-hints!
+  "Set window/context hints from `hints` (map of hint id → value) before [[create-window!]].
+  Hints are not persisted across windows — call again for each creation.
 
   Hint **names** include [[context-version-major]], [[context-version-minor]],
   [[opengl-profile]], [[opengl-forward-compat]]. Hint **values** include [[true*]],
   [[opengl-core-profile]], and numeric versions."
-  [hint value]
-  (GLFW/glfwWindowHint hint value))
+  [hints]
+  (doseq [[hint value] hints]
+    (window-hint! hint value)))
 
 (defn create-window!
   "Create a window and OpenGL context. Returns window handle, or `0` on failure.
 
-  Set hints with [[window-hint!]] first. `monitor` `0` = windowed; `share` `0` = no shared
+  Set hints with [[window-hints!]] first. `monitor` `0` = windowed; `share` `0` = no shared
   context. Then [[make-context-current!]], [[swap-interval!]], and register callbacks."
   [width height title monitor share]
   (GLFW/glfwCreateWindow (int width)

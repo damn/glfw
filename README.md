@@ -25,8 +25,11 @@ JitPack builds from this GitHub repo. The version string is a **git ref**: a [re
 (require '[quest.cyberdungeon.glfw.glfw :as glfw])
 
 (glfw/with-state
-  (glfw/window-hint! glfw/context-version-major 3)
-  ;; window-hint!, create-window!, loop …
+  (glfw/window-hints! {glfw/context-version-major 3
+                       glfw/context-version-minor 2
+                       glfw/opengl-profile glfw/opengl-core-profile
+                       glfw/opengl-forward-compat glfw/true*})
+  ;; create-window!, loop …
   )
 ```
 
