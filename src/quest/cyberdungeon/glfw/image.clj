@@ -1,4 +1,4 @@
-(ns damn.glfw.image
+(ns quest.cyberdungeon.glfw.image
   "LWJGL `GLFWImage` helpers for custom cursors."
   (:import (org.lwjgl.glfw GLFWImage)
            (java.nio ByteBuffer)))

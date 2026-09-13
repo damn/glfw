@@ -1,9 +1,13 @@
-(ns damn.glfw.glfw
-  "1:1 Clojure names for GLFW 3.3 constants and functions (LWJGL `org.lwjgl.glfw.GLFW`).
-  See https://www.glfw.org/docs/3.3/"
+(ns quest.cyberdungeon.glfw.glfw
+  "Clojure names for GLFW 3.3 constants and functions (LWJGL `org.lwjgl.glfw.GLFW`).
+
+  Portable JAR only — applications must add `lwjgl-glfw` (and usually `lwjgl`) **native**
+  classifiers for their OS.
+
+  See the [GLFW 3.3 reference](https://www.glfw.org/docs/3.3/)."
   (:import (org.lwjgl.glfw GLFW)))
 
-;; --- constants (window hints, keys, buttons, gamepad) ---
+;; --- constants ---
 
 (def true* GLFW/GLFW_TRUE)
 
@@ -44,27 +48,41 @@
 
 ;; --- library lifecycle ---
 
-(defn init! []
+(defn init!
+  "Initialize GLFW. Returns truthy on success."
+  []
   (GLFW/glfwInit))
 
-(defn terminate! []
+(defn terminate!
+  "Terminate GLFW and free global resources."
+  []
   (GLFW/glfwTerminate))
 
-(defn poll-events! []
+(defn poll-events!
+  "Poll for and process pending window and input events."
+  []
   (GLFW/glfwPollEvents))
 
-(defn swap-interval! [value]
+(defn swap-interval!
+  "Set swap interval (`0` = vsync off, `1` = vsync on)."
+  [value]
   (GLFW/glfwSwapInterval value))
 
-(defn get-time []
+(defn get-time
+  "Monotonic time in seconds since GLFW initialization."
+  []
   (GLFW/glfwGetTime))
 
 ;; --- window ---
 
-(defn window-hint! [hint value]
+(defn window-hint!
+  "Set a window hint before `create-window!`."
+  [hint value]
   (GLFW/glfwWindowHint hint value))
 
-(defn create-window! [width height title monitor share]
+(defn create-window!
+  "Create a window and context. Returns the window handle (0 on failure)."
+  [width height title monitor share]
   (GLFW/glfwCreateWindow (int width)
                          (int height)
                          (str title)
@@ -86,10 +104,14 @@
 (defn swap-buffers! [window]
   (GLFW/glfwSwapBuffers window))
 
-(defn get-framebuffer-size [window w h]
+(defn get-framebuffer-size
+  "Write framebuffer pixel size into `w` and `h` (int arrays length 1)."
+  [window w h]
   (GLFW/glfwGetFramebufferSize ^long window w h))
 
-(defn get-window-size [window w h]
+(defn get-window-size
+  "Write window size in screen coordinates into `w` and `h` (int arrays length 1)."
+  [window w h]
   (GLFW/glfwGetWindowSize ^long window w h))
 
 ;; --- callbacks ---

@@ -1,4 +1,4 @@
-(ns damn.glfw.gamepad-state
+(ns quest.cyberdungeon.glfw.gamepad-state
   "LWJGL `GLFWGamepadState` stack allocation."
   (:import (org.lwjgl.glfw GLFWGamepadState)))
 

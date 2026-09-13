@@ -1,4 +1,4 @@
-(defproject damn/glfw "0.1.0-SNAPSHOT"
+(defproject com.github.damn/glfw "0.1.0-SNAPSHOT"
   :description "Clojure facade over LWJGL GLFW 3.3"
   :url "https://github.com/damn/glfw"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -7,7 +7,7 @@
                    [org.lwjgl/lwjgl-glfw "3.3.3"]]
   :plugins [[lein-codox "0.10.8"]]
   :source-paths ["src"]
-  :codox {:name "damn.glfw"
+  :codox {:name "quest.cyberdungeon.glfw"
           :description "Clojure wrapper for LWJGL GLFW."
           :output-path "target/doc"
           :source-paths ["src"]
@@ -20,4 +20,4 @@
                                   [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]]}
              :test {:dependencies [[org.lwjgl/lwjgl "3.3.3" :classifier "natives-macos"]
                                    [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]]}}
-  :aliases {"window-test" ["with-profile" "+dev" "run" "-m" "damn.glfw.window-test"]})
+  :aliases {"window-test" ["with-profile" "+dev" "run" "-m" "quest.cyberdungeon.glfw.window-test"]})

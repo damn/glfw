@@ -1,10 +1,18 @@
-# damn/glfw
+# glfw
 
-Clojure namespaces over [LWJGL](https://www.lwjgl.org/) `org.lwjgl.glfw` (GLFW 3.3).
+Clojure namespaces `quest.cyberdungeon.glfw.*` over [LWJGL](https://www.lwjgl.org/) `org.lwjgl.glfw` (GLFW 3.3).
 
-## Dependencies
+## Dependency (JitPack)
 
-This library depends only on the portable `lwjgl-glfw` JAR. **Applications** must add native classifiers for their OS, for example:
+```clojure
+:repositories [["jitpack" "https://jitpack.io"]]
+
+[com.github.damn/glfw "v0.1.0"]
+```
+
+Replace the version with a [release tag](https://github.com/damn/glfw/tags) or commit hash JitPack has built (see [jitpack.io/#damn/glfw](https://jitpack.io/#damn/glfw)).
+
+**Natives** are not bundled — add platform classifiers in your application:
 
 ```clojure
 [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]
@@ -14,11 +22,11 @@ This library depends only on the portable `lwjgl-glfw` JAR. **Applications** mus
 ## Usage
 
 ```clojure
-(require '[damn.glfw.glfw :as glfw])
+(require '[quest.cyberdungeon.glfw.glfw :as glfw])
 
 (when (glfw/init!)
   (try
-    ;; window hints, create-window!, poll-events!, …
+    ;; …
     (finally
       (glfw/terminate!))))
 ```
@@ -29,12 +37,18 @@ This library depends only on the portable `lwjgl-glfw` JAR. **Applications** mus
 lein window-test
 ```
 
-Requires `:dev` profile natives (`lwjgl` + `lwjgl-glfw` classifiers; macOS in `project.clj` — adjust for your platform).
+Uses `:dev` profile natives (`project.clj` defaults to macOS — change for your OS).
 
-## Docs
+## API documentation
 
-```bash
-lein codox
-```
+**Docstrings live in the Clojure sources** (`src/quest/cyberdungeon/glfw/`). Do not duplicate them in this README.
 
-Output: `target/doc/index.html`
+| Approach | Role |
+|----------|------|
+| **README** (this file) | Install, JitPack coordinates, links — not a full API reference |
+| **Codox → GitHub Pages** | Generated HTML from docstrings; linked below |
+| **GitHub source browser** | Shows docstrings on each `.clj` file when browsing the repo |
+
+**Published docs:** [https://damn.github.io/glfw/](https://damn.github.io/glfw/) (Codox output from CI on `main`).
+
+Local: `lein codox` → open `target/doc/index.html`.

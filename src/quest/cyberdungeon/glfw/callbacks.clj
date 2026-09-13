@@ -1,5 +1,5 @@
-(ns damn.glfw.callbacks
-  "Free GLFW window callbacks registered via `damn.glfw.glfw` setters."
+(ns quest.cyberdungeon.glfw.callbacks
+  "Free GLFW window callbacks registered via `quest.cyberdungeon.glfw.glfw` setters."
   (:import (org.lwjgl.glfw Callbacks)))
 
 (defn free!

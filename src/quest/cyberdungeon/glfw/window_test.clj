@@ -1,6 +1,6 @@
-(ns damn.glfw.window-test
+(ns quest.cyberdungeon.glfw.window-test
   "Opens a window, polls events until closed. Run: `lein window-test`."
-  (:require [damn.glfw.glfw :as glfw])
+  (:require [quest.cyberdungeon.glfw.glfw :as glfw])
   (:gen-class))
 
 (defn -main
@@ -12,7 +12,7 @@
     (glfw/window-hint! glfw/context-version-minor 2)
     (glfw/window-hint! glfw/opengl-profile glfw/opengl-core-profile)
     (glfw/window-hint! glfw/opengl-forward-compat glfw/true*)
-    (let [window (glfw/create-window! 640 480 "damn.glfw window test" 0 0)]
+    (let [window (glfw/create-window! 640 480 "quest.cyberdungeon.glfw window test" 0 0)]
       (when (zero? window)
         (throw (ex-info "Couldn't create window" {})))
       (try
