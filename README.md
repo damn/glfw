@@ -7,7 +7,7 @@ Clojure namespaces `quest.cyberdungeon.glfw.*` over [LWJGL](https://www.lwjgl.or
 ```clojure
 :repositories [["jitpack" "https://jitpack.io"]]
 
-[com.github.damn/glfw "v0.1.0"]
+[com.github.damn/glfw "v0.1.1"]
 ```
 
 Replace the version with a [release tag](https://github.com/damn/glfw/tags) or commit hash JitPack has built (see [jitpack.io/#damn/glfw](https://jitpack.io/#damn/glfw)).
