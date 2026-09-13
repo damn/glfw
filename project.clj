@@ -7,6 +7,7 @@
                    [org.lwjgl/lwjgl-glfw "3.3.3"]]
   :plugins [[lein-codox "0.10.8"]]
   :source-paths ["src"]
+  :test-paths ["test"]
   :codox {:name "quest.cyberdungeon.glfw"
           :description "Clojure wrapper for LWJGL GLFW."
           :output-path "target/doc"
@@ -22,5 +23,7 @@
                                    [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]]}
              ;; Codox loads ns forms (evals GLFW constants); needs natives on the host OS.
              :codox {:dependencies [[org.lwjgl/lwjgl "3.3.3" :classifier "natives-linux"]
-                                    [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-linux"]]}}
-  :aliases {"window-test" ["with-profile" "+dev" "run" "-m" "quest.cyberdungeon.glfw.window-test"]})
+                                    [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-linux"]]}
+             ;; `lein run` only sees :source-paths; add test for the smoke-test alias.
+             :run-test {:source-paths ["src" "test"]}}
+  :aliases {"window-test" ["with-profile" "+dev,+run-test" "run" "-m" "quest.cyberdungeon.glfw.window-test"]})

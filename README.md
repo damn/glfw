@@ -55,4 +55,6 @@ If the site 404s after the first workflow run, enable Pages once: **Settings →
 
 Local (macOS): `lein with-profile +dev codox` → open `target/doc/index.html`.
 
-Codox evaluates GLFW interop forms; the host needs LWJGL natives (CI uses `:codox` with Linux classifiers).
+Codox **loads** each namespace (it does not AOT-compile your lib, but it `require`s ns forms to read docstrings). Evaluating `(def true* GLFW/GLFW_TRUE)` loads the LWJGL `GLFW` class, which pulls in **JNI natives** — so doc generation needs the same native JARs as running GLFW on that OS. CI uses the `:codox` profile (`natives-linux`).
+
+The window smoke test lives under `test/` (not published in the library JAR, not included in Codox `:source-paths`).

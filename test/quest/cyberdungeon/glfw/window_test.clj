@@ -1,7 +1,6 @@
 (ns quest.cyberdungeon.glfw.window-test
-  "Opens a window, polls events until closed. Run: `lein window-test`."
-  (:require [quest.cyberdungeon.glfw.glfw :as glfw])
-  (:gen-class))
+  "Smoke test: open a window and poll until closed. Run: `lein window-test`."
+  (:require [quest.cyberdungeon.glfw.glfw :as glfw]))
 
 (defn -main
   [& _]
