@@ -49,6 +49,8 @@ Uses `:dev` profile natives (`project.clj` defaults to macOS — change for your
 | **Codox → GitHub Pages** | Generated HTML from docstrings; linked below |
 | **GitHub source browser** | Shows docstrings on each `.clj` file when browsing the repo |
 
-**Published docs:** [https://damn.github.io/glfw/](https://damn.github.io/glfw/) (Codox output from CI on `main`).
+**Published docs:** [https://damn.github.io/glfw/](https://damn.github.io/glfw/) (Codox output from CI on `main` → `gh-pages` branch).
+
+If the site 404s after the first workflow run, enable Pages once: **Settings → Pages → Build and deployment → Deploy from branch → `gh-pages` / `/`**, or use the GitHub API to create the Pages site.
 
 Local: `lein codox` → open `target/doc/index.html`.
