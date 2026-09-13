@@ -19,5 +19,8 @@
   :profiles {:dev {:dependencies [[org.lwjgl/lwjgl "3.3.3" :classifier "natives-macos"]
                                   [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]]}
              :test {:dependencies [[org.lwjgl/lwjgl "3.3.3" :classifier "natives-macos"]
-                                   [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]]}}
+                                   [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-macos"]]}
+             ;; Codox loads ns forms (evals GLFW constants); needs natives on the host OS.
+             :codox {:dependencies [[org.lwjgl/lwjgl "3.3.3" :classifier "natives-linux"]
+                                    [org.lwjgl/lwjgl-glfw "3.3.3" :classifier "natives-linux"]]}}
   :aliases {"window-test" ["with-profile" "+dev" "run" "-m" "quest.cyberdungeon.glfw.window-test"]})

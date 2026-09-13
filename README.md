@@ -53,4 +53,6 @@ Uses `:dev` profile natives (`project.clj` defaults to macOS — change for your
 
 If the site 404s after the first workflow run, enable Pages once: **Settings → Pages → Build and deployment → Deploy from branch → `gh-pages` / `/`**, or use the GitHub API to create the Pages site.
 
-Local: `lein codox` → open `target/doc/index.html`.
+Local (macOS): `lein with-profile +dev codox` → open `target/doc/index.html`.
+
+Codox evaluates GLFW interop forms; the host needs LWJGL natives (CI uses `:codox` with Linux classifiers).

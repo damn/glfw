@@ -16,9 +16,10 @@ jobs:
         with:
           lein: "2.11.2"
       - name: Generate Codox
-        run: lein codox
+        run: lein with-profile +codox codox
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target/doc
+          force_orphan: true
