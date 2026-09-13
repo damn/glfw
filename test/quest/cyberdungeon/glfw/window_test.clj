@@ -5,10 +5,10 @@
 (defn -main
   [& _]
   (glfw/with-state
-    (glfw/window-hints! {glfw/context-version-major 3
-                         glfw/context-version-minor 2
-                         glfw/opengl-profile glfw/opengl-core-profile
-                         glfw/opengl-forward-compat glfw/true*})
+    (glfw/window-hints! {:context-version-major 3
+                         :context-version-minor 2
+                         :opengl-profile :opengl-core-profile
+                         :opengl-forward-compat true})
     (let [window (glfw/create-window! 640 480 "quest.cyberdungeon.glfw window test" 0 0)]
       (when (zero? window)
         (throw (ex-info "Couldn't create window" {})))

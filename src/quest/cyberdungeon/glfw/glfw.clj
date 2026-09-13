@@ -19,30 +19,6 @@
 
 ;; --- constants ---
 
-(def true*
-  "Boolean hint value (`1`). Use with [[window-hints!]], e.g. [[opengl-forward-compat]]."
-  GLFW/GLFW_TRUE)
-
-(def context-version-major
-  "Window hint name: OpenGL major version. Set via [[window-hints!]] before [[create-window!]]."
-  GLFW/GLFW_CONTEXT_VERSION_MAJOR)
-
-(def context-version-minor
-  "Window hint name: OpenGL minor version. Pair with [[context-version-major]] via [[window-hints!]]."
-  GLFW/GLFW_CONTEXT_VERSION_MINOR)
-
-(def opengl-profile
-  "Window hint name: OpenGL profile. Value is often [[opengl-core-profile]] via [[window-hints!]]."
-  GLFW/GLFW_OPENGL_PROFILE)
-
-(def opengl-core-profile
-  "Window hint value: OpenGL core profile. Use with [[opengl-profile]] and [[window-hints!]]."
-  GLFW/GLFW_OPENGL_CORE_PROFILE)
-
-(def opengl-forward-compat
-  "Window hint name: forward-compatible context. Pass [[true*]] to [[window-hints!]] (common on macOS)."
-  GLFW/GLFW_OPENGL_FORWARD_COMPAT)
-
 (def key-escape
   "Keyboard key token for [[get-key]] / [[set-key-callback!]]. Action: [[press]] or [[release]]."
   GLFW/GLFW_KEY_ESCAPE)
@@ -182,20 +158,50 @@
 
 ;; --- window ---
 
+(def ^:private true* GLFW/GLFW_TRUE)
+(def ^:private false* GLFW/GLFW_FALSE)
+(def ^:private opengl-core-profile GLFW/GLFW_OPENGL_CORE_PROFILE)
+
+(def ^:private window-hint-name->gl
+  {:context-version-major GLFW/GLFW_CONTEXT_VERSION_MAJOR
+   :context-version-minor GLFW/GLFW_CONTEXT_VERSION_MINOR
+   :opengl-profile GLFW/GLFW_OPENGL_PROFILE
+   :opengl-forward-compat GLFW/GLFW_OPENGL_FORWARD_COMPAT})
+
+(def ^:private window-hint-value->gl
+  {true true*
+   false false*
+   :opengl-core-profile opengl-core-profile})
+
 (defn- window-hint!
   [hint value]
   (GLFW/glfwWindowHint hint value))
 
-(defn window-hints!
-  "Set window/context hints from `hints` (map of hint id → value) before [[create-window!]].
-  Hints are not persisted across windows — call again for each creation.
+(defn- resolve-window-hint-name
+  [hint]
+  (or (window-hint-name->gl hint)
+      (throw (ex-info "Unknown window hint" {:hint hint}))))
 
-  Hint **names** include [[context-version-major]], [[context-version-minor]],
-  [[opengl-profile]], [[opengl-forward-compat]]. Hint **values** include [[true*]],
-  [[opengl-core-profile]], and numeric versions."
+(defn- resolve-window-hint-value
+  [value]
+  (if (contains? window-hint-value->gl value)
+    (window-hint-value->gl value)
+    value))
+
+(defn window-hints!
+  "Set window/context hints before [[create-window!]]. `hints` uses **keywords** for hint names
+  and Clojure values where possible; not persisted across windows.
+
+  Example (OpenGL 3.2 core, forward-compatible on macOS):
+
+      {:context-version-major 3
+       :context-version-minor 2
+       :opengl-profile :opengl-core-profile
+       :opengl-forward-compat true}"
   [hints]
   (doseq [[hint value] hints]
-    (window-hint! hint value)))
+    (window-hint! (resolve-window-hint-name hint)
+                  (resolve-window-hint-value value))))
 
 (defn create-window!
   "Create a window and OpenGL context. Returns window handle, or `0` on failure.
